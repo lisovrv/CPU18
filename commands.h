@@ -1,0 +1,12 @@
+
+DEFCMD( PUSH,   101, 4, 1)
+DEFCMD( POP,    102, 3, 0)
+DEFCMD( ADD,    110, 3, 0)
+DEFCMD( SUB,    111, 3, 0)
+DEFCMD( MUL,    112, 3, 0)
+DEFCMD( DIV,    113, 3, 0)
+DEFCMD( IN,     150, 2, 0)
+DEFCMD( OUT,    151, 3, 0)
+DEFCMD( END,    0,   3, 0)
+
+

@@ -1,0 +1,27 @@
+fact:
+push rbx
+push rcx
+je vano
+push rcx
+push -1
+add
+pop rcx
+push rax
+push rcx
+mul
+pop rax
+call fact
+vano:
+ret
+
+start
+push 1
+pop rbx
+in
+pop rax
+push rax
+pop rcx
+call fact
+push rax
+out
+end

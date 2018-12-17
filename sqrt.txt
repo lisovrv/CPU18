@@ -1,0 +1,117 @@
+func:
+push 0
+push rax
+je null_a       ; (if a == 0)
+call square     ; else{}
+ret
+null_a:
+push 0
+push rbx
+je null_b       ; (if b == 0)
+call lineal     ; else{}
+ret
+null_b:
+push 0
+push rcx
+je null_c       ; (if c == 0)
+push 0          ; else{}
+pop [2]         ; num = 0
+push -42        ; poison
+pop [0]
+push -42        ; poison
+pop [1]
+null_c:
+push -99
+pop [2]         ; num = -777 //infinit
+push 42         ; root is all
+pop [0]
+push 42         ; root is all
+pop [1]
+ret
+
+lineal:
+push rbx
+push rcx
+divide
+push -1
+mul
+pop [0]         ;  first root = -b/c
+push -42
+pop [1]         ;  no second root - poison
+push 1
+pop [2]         ; num = 1
+ret
+
+square:
+push rbx
+push rbx
+mul
+pop [0]     ; b^2s
+push 4
+push rax
+push rcx
+mul
+mul
+pop [1]     ; 4*a*c
+push [1]
+push [0]
+sub
+sqr
+pop [2]     ; sqrt(b^2 - 4*a*c)
+
+;first root:
+
+push [2]
+push rbx
+sub
+push -1
+mul
+pop [3]     ; -1 * (sqrt( b^2 - 4*a*c) - b)
+push rax
+push 2
+mul
+push [3]
+divide
+pop rdx      ; (-1 * (sqrt( b^2 - 4*a*c) - b)) / 2a
+
+; second root:
+
+push [2]
+push rbx
+add
+push -1
+mul
+pop [4]     ; -1 * (sqrt( b^2 - 4*a*c) + b)
+push rax
+push 2
+mul
+push [4]
+divide
+pop rbx      ; (-1 * (sqrt( b^2 - 4*a*c) - b)) / 2a
+
+
+push rdx
+pop [0]
+push rbx
+pop [1]
+push 2
+pop [2]
+
+ret
+
+start
+in
+pop rax
+in
+pop rbx
+in
+pop rcx
+call func
+push [2]
+push [1]
+push [0]
+out
+out
+out
+;meow
+end

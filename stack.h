@@ -12,7 +12,7 @@ typedef int data_t;
 
 
 static data_t  CAN1 = (data_t)random();
-static data_t  CAN2 = (data_t) random();
+static data_t  CAN2 = (data_t)random();
 
 
 class Stack
@@ -46,29 +46,32 @@ public:
     bool IsEmpty();
     bool IsFull();
     error_stack Dump();
+    void Dump_term(FILE* file_dump);
     Stack* Copy();
     ~Stack();
 
+    Stack& operator=(const Stack&) = delete;
+    Stack(const Stack&) = delete;
 };
 
-#define assert_( what, ref, format )                       \
-          do                                              \
-          {                                               \
-            if((what) != ref)                             \
-            {                                             \
-                stk->verificator.print_file("Failed:"     \
-                       " while acting in  "               \
-                       "function: "                       \
-                       "%s,\n expected : %"#format"\n",   \
-                       #what ,  ref);                     \
-            }                                             \
-            else                                          \
-            {                                             \
-                stk->verificator.print_file("\n\tFrom unittest:\t"    \
-                                #what"....Passed....\n\n");      \
-            }                                             \
-                                                            \
-                                                            \
+#define assert_( what, ref, format )                                    \
+          do                                                            \
+          {                                                             \
+            if((what) != ref)                                           \
+            {                                                           \
+                stk->verificator.print_file("Failed:"                   \
+                       " while acting in  "                             \
+                       "function: "                                     \
+                       "%s,\n expected : %"#format"\n",                 \
+                       #what ,  ref);                                   \
+            }                                                           \
+            else                                                        \
+            {                                                           \
+                stk->verificator.print_file("\n\tFrom unittest:\t"      \
+                                #what"....Passed....\n\n");             \
+            }                                                           \
+                                                                        \
+                                                                        \
           } while(0)
 
 

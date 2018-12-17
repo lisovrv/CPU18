@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "enum.h"
-
+#include "enum_for_stack.h"
 
 /**
  *
@@ -14,18 +13,18 @@
 
 class Verificator
 {
-    FILE* verificator ; /// Output file for printing errors
+    FILE* verificator; /// Output file for printing errors
 
 public:
 
     error_stack last_error;
     Verificator();
     explicit Verificator(const char* file_name);
-    error_stack Test(error_stack error);
-    error_stack print_file(const  char *fmt, ... );      /// print in file
+    error_stack print_file(const  char *fmt, ... );        /// print in file
     error_stack PrintLog();
     ~Verificator();
 };
+
 
 
 

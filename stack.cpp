@@ -24,16 +24,16 @@ Stack::Stack():
     _hash_(hash_new);
 }
 
-#define MAX_CAPACITY 1000
 
 Stack::Stack(size_t capacity_): canary1(CAN1), canary2(CAN2),
                                 capacity(capacity_), size(0)
 {
-    if(capacity_ >= MAX_CAPACITY)
+    auto calloced_memory  = (data_t *) calloc(this->capacity, sizeof(data_t));
+    if(calloced_memory == nullptr)
     {
         Test(STACKOVERFLOW);
     }
-    this->data = (data_t *) calloc(this->capacity, sizeof(data_t));
+    this->data = calloced_memory;
     _hash_(hash_ref);
     _hash_(hash_new);
     Test(this->StackOK());
@@ -42,8 +42,9 @@ Stack::Stack(size_t capacity_): canary1(CAN1), canary2(CAN2),
 Stack::~Stack()
 {
     Test(this->StackOK());
-
     Clean();
+    this->canary1 = -1;
+    this->canary2 = -1;
     free(this->data);
     this->data = nullptr;
     this->capacity = 0;
@@ -52,11 +53,10 @@ Stack::~Stack()
 
 error_stack Stack::Push (data_t value_)
 {
+    this->verificator.last_error = NO_ERR;
     Test(this->StackOK());
-    //printf("FFFF");
     if(this->size == this->capacity)
     {
-        //printf("FFFF  ");
         this->Realloc();
     }
     this->data[this->size] = value_;
@@ -82,6 +82,7 @@ error_stack Stack::Push (data_t value_)
 
 data_t Stack::Pop ()
 {
+    this->verificator.last_error = NO_ERR;
     Test(this->StackOK());
     if(this->size <= this->capacity / 2)
     {
@@ -89,11 +90,8 @@ data_t Stack::Pop ()
     }
     if(this->size == 0)
     {
-        //printf("1AAA\n");
         Test(STACKUNDERFLOW);
-        return NAN;
     }
-    //printf("AAA\n");
     this->size --;
     data_t element_ = this->data[this->size];
     this->data[this->size] = 0;
@@ -118,44 +116,44 @@ data_t Stack::Pop ()
  */
 
 
-#define MULTI_REALLOC 2
-#define DIVIDE_REALLOC 0.75
-
 
 error_stack Stack::Realloc()
 {
+    this->verificator.last_error = NO_ERR;
     Test(this->StackOK());
     if(this->size == this->capacity)
     {
-        if(this->capacity >= MAX_CAPACITY)
+
+        auto calloced_memory  = (data_t*) realloc (this->data,
+                                         this->capacity * 3 * sizeof (data_t));
+        if(calloced_memory == nullptr)
         {
             Test(STACKOVERFLOW);
-            //exit(-1);
-            return STACKOVERFLOW;
-        }
-        else if(this->capacity * MULTI_REALLOC >= MAX_CAPACITY)
-        {
-            this->data  = (data_t*) realloc (this->data,
-                                             MAX_CAPACITY * sizeof (data_t));
-            this->capacity = MAX_CAPACITY;
-            //verificator.print_file("FFFFFFFFFFFF\n\n");
         }
         else
         {
-            //printf("7wwwwwwwwww  ");
-            //verificator.print_file("FFFFFFFFFFFF\n\n");
-
-            this->data  = (data_t*) realloc (this->data,
-                                         MULTI_REALLOC * this->capacity * sizeof (data_t));
-            this->capacity = MULTI_REALLOC * this->capacity;
+            this->data = calloced_memory;
+            this->capacity = (this->capacity * 3);
+            for(size_t i = this->size; i < this->capacity; i++)
+            {
+                this->data[i] = (data_t) 0;
+            }
         }
     }
-    else if(this->size <= this->capacity / 2)
+    else if(this->size <= ((this->capacity / 2) + 1))
     {
-        this->data  = (data_t*) realloc (this->data,
-                                         (size_t) (DIVIDE_REALLOC * this->capacity) * sizeof (data_t));
-        this->capacity = (size_t) (this->capacity * DIVIDE_REALLOC);
-        //printf("%d \n", this->capacity);
+
+        auto calloced_memory  = (data_t*) realloc (this->data,
+                                                   ((this->capacity / 2) + 1)* sizeof (data_t));
+        if(calloced_memory == nullptr)
+        {
+            Test(BAD_CAPACITY);
+        }
+        else
+        {
+            this->data = calloced_memory;
+            this->capacity = ((this->capacity / 2) + 1);
+        }
     }
 
     Test(this->StackOK());
@@ -163,9 +161,6 @@ error_stack Stack::Realloc()
 
 }
 
-#undef MULTI_REALLOC
-#undef DIVIDE_REALLOC
-#undef MAX_CAPACITY
 
 //----------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------STACK_OK------------------------------------------------------------
@@ -181,7 +176,6 @@ error_stack Stack::Realloc()
 
 error_stack Stack::StackOK()
 {
-
     if(this->data == nullptr)
     {
         verificator.last_error = BAD_DATA_PTR;
@@ -229,11 +223,10 @@ error_stack Stack::StackOK()
 error_stack Stack::Test(error_stack error)
 {
     verificator.last_error = error;
-    //printf("BBBBB\n");
 
     if(verificator.last_error != NO_ERR)
     {
-        //printf("BBBBB\n");
+        //printf(" this_stk = %p", this);
         verificator.PrintLog();
     }
     return verificator.last_error;
@@ -253,25 +246,47 @@ error_stack Stack::Test(error_stack error)
 
 error_stack Stack::Dump()
 {
+    this->verificator.last_error = NO_ERR;
     Test(this->StackOK());
-    //printf("RRRR ");
     this->verificator.print_file("\n\n--------------------------------------------------------------------\n");
     this->verificator.print_file("Stack : [%p]\n", this);
     this->verificator.print_file("capacity = %zu\n", this->capacity);
     this->verificator.print_file("size = %zu\n", this->size);
     this->verificator.print_file("data: [%p]\n", this->data);
-    for(size_t i = 0; i < this->size; i++)
+    if(this->data != nullptr)
     {
-        this->verificator.print_file("\treal:  data[%d] = %d\n", i, this->data[i]);
-    }
-    for(size_t i = this->size; i < this->capacity; i++)
-    {
-        this->verificator.print_file("\tempty: data[%d] = %d\n", i, this->data[i]);
+        for(size_t i = 0; i < this->size; i++)
+        {
+            this->verificator.print_file("\treal:  data[%d] = %d\n", i, this->data[i]);
+        }
+        for(size_t i = this->size; i < this->capacity; i++)
+        {
+            this->verificator.print_file("\tempty: data[%d] = %d\n", i, this->data[i]);
+        }
     }
     this->verificator.print_file("--------------------------------------------------------------------\n");
 
     Test(this->StackOK());
     return this->verificator.last_error;
+}
+
+void Stack::Dump_term(FILE* file_dump)
+{
+    fprintf(file_dump, "Stack : [%p]\n", this);
+    fprintf(file_dump, "capacity = %zu\n", this->capacity);
+    fprintf(file_dump, "size = %zu\n", this->size);
+    fprintf(file_dump, "data: [%p]\n", this->data);
+    if(this->data != nullptr)
+    {
+        for(size_t i = 0; i < this->size; i++)
+        {
+            fprintf(file_dump, "\treal:  data[%d] = %d\n", i, this->data[i]);
+        }
+        for(size_t i = this->size; i < this->capacity; i++)
+        {
+            fprintf(file_dump, "\tempty: data[%d] = %d\n", i, this->data[i]);
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -288,6 +303,7 @@ error_stack Stack::Dump()
 
 error_stack Stack::Clean()
 {
+    this->verificator.last_error = NO_ERR;
     Test(this->StackOK());
     while (this->size > 0)
     {
@@ -296,11 +312,8 @@ error_stack Stack::Clean()
     }
 
     _hash_(hash_ref);
-    //printf("%d\n", hash_new);
-    //printf("%d\n", hash_ref);
     _hash_(hash_new);
     Test(this->StackOK());
-    //printf("FFFF\n");
     return verificator.last_error;
 }
 
@@ -318,6 +331,7 @@ error_stack Stack::Clean()
 
 size_t Stack::Size ()
 {
+    this->verificator.last_error = NO_ERR;
     Test(this->StackOK());
     this->hash_new = this->Hash_Refresh();
     return this->size;
@@ -337,6 +351,7 @@ size_t Stack::Size ()
 
 size_t Stack::Capacity ()
 {
+    this->verificator.last_error = NO_ERR;
     Test(this->StackOK());
     return this->capacity;
 }
@@ -355,6 +370,7 @@ size_t Stack::Capacity ()
 
 bool Stack::IsEmpty ()
 {
+    this->verificator.last_error = NO_ERR;
     Test(this->StackOK());
     return 0 == this->size;
 }
@@ -373,6 +389,7 @@ bool Stack::IsEmpty ()
 
 bool Stack::IsFull ()
 {
+    this->verificator.last_error = NO_ERR;
     Test(this->StackOK());
     return this->capacity == this->size;
 }
@@ -391,6 +408,7 @@ bool Stack::IsFull ()
 
 Stack* Stack::Copy ()
 {
+    this->verificator.last_error = NO_ERR;
     Test(this->StackOK());
 
     auto stk_copy = new Stack(this->capacity);

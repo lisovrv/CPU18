@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include "stack.h"
+#include "print_log.h"
 
 #define EXIT
 #ifdef EXIT
@@ -10,12 +10,13 @@
 #define exit( num ) if(0) exit( num )
 #endif
 
+FILE* file_name = fopen("print_stack.txt", "w+" );
 
 
 Verificator::Verificator()
 {
-    FILE* print_log = fopen("print_log.txt", "r+" );
-    this->verificator = print_log;
+    this->verificator = file_name;
+    //this->verificator = fopen("print_stack.txt", "r+" );
     if(this->verificator == nullptr)
     {
         last_error = FILE_ERR;
@@ -28,6 +29,7 @@ Verificator::Verificator()
 
 /*Verificator::Verificator(const char* file_name)
 {
+    //this->verificator = fopen(file_name, "r+" );
     this->verificator = file_name;
     if(this->verificator == nullptr)
     {
@@ -53,7 +55,7 @@ error_stack Verificator::PrintLog()
     switch (this->last_error)
     {
         case  BAD_DATA_PTR:
-            this->print_file("ERROR: the pointer on this->data is nullptr: YOU CAN'T USE POINTER ANYMORE\n");
+            this->print_file("ERROR: the pointer on this->data is nullptr: YOU CAN'T USE STACK ANYMORE\n");
             exit(BAD_DATA_PTR);
             return BAD_DATA_PTR;
         case  LEFT_CAN_KILLED:
@@ -77,15 +79,15 @@ error_stack Verificator::PrintLog()
             exit(SIZ_BIGGER_CAP);
             return SIZ_BIGGER_CAP;
         case  FILE_ERR:
-            this->print_file("ERROR: file was not opened: YOU CAN'T USE FILE ANYMORE\n");
+            this->print_file("ERROR: file was not opened: YOU CAN'T USE STACK ANYMORE\n");
             exit(FILE_ERR);
             return FILE_ERR;
         case  CLOSE_ERR:
-            this->print_file("ERROR: file was not correctly closed: YOU CAN'T USE FILE ANYMORE\n");
+            this->print_file("ERROR: file was not correctly closed: YOU CAN'T USE STACK ANYMORE\n");
             exit(CLOSE_ERR);
             return CLOSE_ERR;
         case  BAD_PTR:
-            this->print_file("ERROR: the pointer is nullptr: YOU CAN'T USE POINTER ANYMORE\n");
+            this->print_file("ERROR: the pointer is nullptr: YOU CAN'T USE STACK ANYMORE\n");
             exit(BAD_PTR);
             return BAD_PTR;
         case  BAD_HASH:
@@ -97,13 +99,10 @@ error_stack Verificator::PrintLog()
             exit(STACKOVERFLOW);
             return STACKOVERFLOW;
         case  STACKUNDERFLOW:
-            this->print_file("ERROR: stack is underflow: YOU CAN'T USE STACK ANYMORE\n");
+            this->print_file("this = %p, ERROR: stack is underflow: YOU CAN'T "
+                             "USE STACK ANYMORE\n", this);
             exit(STACKUNDERFLOW);
             return STACKUNDERFLOW;
-        case  FREAD_ERR:
-            this->print_file("ERROR: fread return mistake: YOU CAN'T USE file ANYMORE\n");
-            exit(FREAD_ERR);
-            return FREAD_ERR;
         default:
             return NO_ERR;
     }
@@ -111,16 +110,6 @@ error_stack Verificator::PrintLog()
 
 }
 
-error_stack Verificator::Test(error_stack error)
-{
-    this->last_error = error;
-
-    if(this->last_error != NO_ERR)
-    {
-        this->PrintLog();
-    }
-    return this->last_error;
-}
 
 error_stack Verificator::print_file(const char *fmt, ... )
 {
@@ -140,6 +129,3 @@ error_stack Verificator::print_file(const char *fmt, ... )
 
     return this->last_error;
 }
-
-
-

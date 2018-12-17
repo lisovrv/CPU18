@@ -3,11 +3,17 @@
 
 enum commands
 {
-#define DEFCMD( name, num, letters, arguments) CMD_##name = (num),
-
+#define DEFCMD( name, value, arguments, code ) name = (value),
 #include "commands.h"
-    CMD_MAX = 500
 #undef DEFCMD
-
 };
+
+enum registerss
+{
+#define DEFREG( name, value) name = (value),
+#include "registers.h"
+#undef DEFREG
+};
+
+
 #endif //CPU_ENUM_CMD_H
